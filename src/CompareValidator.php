@@ -7,11 +7,6 @@ namespace Tian\Validator;
 class CompareValidator extends Validator {
 	/**
 	 *
-	 * @var string the name of the attribute to be compared with
-	 */
-	public $compareAttribute;
-	/**
-	 *
 	 * @var string the constant value to be compared with
 	 */
 	public $compareValue;
