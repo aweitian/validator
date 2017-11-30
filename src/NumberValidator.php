@@ -11,6 +11,13 @@ class NumberValidator extends Validator {
 	 * @var boolean whether the attribute value can only be an integer. Defaults to false.
 	 */
 	public $integerOnly = false;
+
+
+	/**
+	 *
+	 * @var boolean whether the attribute value can only be an integer. Defaults to false.
+	 */
+	public $unsignedOnly = false;	
 	/**
 	 *
 	 * @var boolean whether the attribute value can be null or empty. Defaults to true,
@@ -32,6 +39,9 @@ class NumberValidator extends Validator {
 	 * @inheritdoc
 	 */
 	public function validate($value) {
+		if ($this->unsignedOnly && strpos($value, "-") === 0)
+			return false;
+
 		if ($this->allowEmpty && $this->isEmpty ( $value ))
 			return true;
 		if ($this->integerOnly) {
