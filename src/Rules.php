@@ -15,6 +15,43 @@ class Rules
     protected $isBail = false;
     protected $data = array();
 
+    protected $text = array();
+
+
+    protected $overrideErrors = array();
+
+    /**
+     * @return array
+     */
+    public function getText()
+    {
+        return $this->text;
+    }
+
+    /**
+     * @param array $text
+     */
+    public function setText($text)
+    {
+        $this->text = $text;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOverrideErrors()
+    {
+        return $this->overrideErrors;
+    }
+
+    /**
+     * @param array $overrideErrors
+     */
+    public function setOverrideErrors($overrideErrors)
+    {
+        $this->overrideErrors = $overrideErrors;
+    }
+
     /**
      * @param array $rules
      * @return $this
@@ -74,12 +111,32 @@ class Rules
         }
         foreach ($this->rules as $key => $rule) {
             $val = isset($this->data[$key]) ? $this->data[$key] : null;
-            $this->validateRule($rule, $val);
+            $this->validateRule($rule, $val, $key);
             if (!empty($this->errors) && $this->isBail) {
                 break;
             }
         }
         return empty($this->errors);
+    }
+
+    protected function friendErr($key, $error)
+    {
+        if (isset($this->overrideErrors[$key])) {
+            $error = strtr(
+                $this->overrideErrors[$key],
+                array(
+                    "{attribute}" => isset($this->text[$key]) ? $this->text[$key] : $key
+                )
+            );
+        } else {
+            $error = strtr(
+                $error,
+                array(
+                    "{attribute}" => isset($this->text[$key]) ? $this->text[$key] : $key
+                )
+            );
+        }
+        $this->errors[] = $error;
     }
 
     /***
@@ -96,8 +153,9 @@ class Rules
      * fun:calss::handle
      * @param $string_rules
      * @param $value
+     * @param $key
      */
-    public function validateRule($string_rules, $value)
+    public function validateRule($string_rules, $value, $key)
     {
         $this->isBail = false;
         $rules = explode("|", $string_rules);
@@ -117,7 +175,7 @@ class Rules
                     $this->isBail = true;
                     return;
                 case "bool":
-                    $this->bool_validate($cmd, $args, $value);
+                    $this->bool_validate($key, $args, $value);
                     break;
                 case "eq":
                 case "ne":
@@ -125,70 +183,64 @@ class Rules
                 case "ge":
                 case "lt":
                 case "le":
-                    $this->cmp_validate($cmd, $args, $value);
+                    $this->cmp_validate($key, $cmd, $args, $value);
                     break;
                 case "email":
-                    $this->email_validate($cmd, $args, $value);
+                    $this->email_validate($key, $value);
                     break;
                 case "required":
-                    $this->required_validate($cmd, $args, $value);
+                    $this->required_validate($key, $args, $value);
                     break;
                 case "str":
-                    $this->string_validate($cmd, $args, $value);
+                    $this->string_validate($key, $args, $value);
                     break;
                 case "range":
-                    $this->range_validate($cmd, $args, $value);
+                    $this->range_validate($key, $args, $value);
                     break;
                 case "int":
-                    $this->int_validate($cmd, $args, $value);
+                    $this->int_validate($key, $args, $value);
                     break;
                 case "number":
-                    $this->number_validate($cmd, $args, $value);
+                    $this->number_validate($key, $args, $value);
                     break;
                 case "regexp":
-                    $this->regexp_validate($cmd, $reg, $value);
+                    $this->regexp_validate($key, $reg, $value);
                     break;
                 case "url":
-                    $this->url_validate($cmd, $args, $value);
+                    $this->url_validate($key, $value);
                     break;
                 case "fun":
-
-                    if (is_callable($reg)) {
+                    if ($reg instanceof \Closure || (is_array($reg) && is_callable($reg))) {
                         $ret = call_user_func_array($reg, array($value));
-                        if ($ret !== true)
-                        {
-                            $this->errors[] = "$reg test failed.";
+                        if ($ret !== true) {
+                            $this->friendErr($key, "{attribute} callback test failed.");
                         }
                     } else {
-                        if (is_string($reg))
-                        {
-                            $call = explode("::",$reg,2);
-                            if (count($call) == 2)
-                            {
-                                if (class_exists($call[0]))
-                                {
+                        if (is_string($reg)) {
+                            $call = explode("::", $reg, 2);
+                            if (count($call) == 2) {
+                                if (class_exists($call[0])) {
                                     $rc = new \ReflectionClass($call[0]);
-                                    if ($rc->hasMethod($call[1]))
-                                    {
+                                    if ($rc->hasMethod($call[1])) {
                                         $ins = $rc->newInstance();
                                         $me = $rc->getMethod($call[1]);
-                                        if(true === $me->invokeArgs($ins,array($value)))
-                                        {
+                                        if (true === $me->invokeArgs($ins, array($value))) {
                                             break;
+                                        } else {
+                                            $this->friendErr($key, "field:{attribute},{$reg} executed value is false.");
                                         }
                                     } else {
-                                        $this->errors[] = "{$call[1]} is invalid method.";
+                                        $this->friendErr($key, "field:{attribute},{$call[1]} is invalid method.");
                                     }
                                 } else {
-                                    $this->errors[] = "$reg is invalid callback.";
+                                    $this->friendErr($key, "field:{attribute},$reg is invalid callback.");
                                 }
                             } else {
-                                $this->errors[] = "$reg format is class::method.";
+                                $this->friendErr($key, "field:{attribute},$reg format is class::method.");
                             }
                         } else {
-                            $this->errors[] = "$reg is invalid callback.";
+                            $this->friendErr($key, "field:{attribute},$reg is invalid callback.");
                         }
-
                     }
                     break;
                 default:
@@ -197,7 +249,7 @@ class Rules
         }
     }
 
-    protected function bool_validate($cmd, $args, $value)
+    protected function bool_validate($key, $args, $value)
     {
         $v = new BooleanValidator();
         if (isset($args[0])) {
@@ -207,29 +259,29 @@ class Rules
             $v->allowEmpty = $args[1] == "0" ? false : true;
         }
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function regexp_validate($cmd, $reg, $value)
+    protected function regexp_validate($key, $reg, $value)
     {
         $v = new RegularExpressionValidator();
         $v->pattern = $reg;
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function range_validate($cmd, $args, $value)
+    protected function range_validate($key, $args, $value)
     {
         $v = new RangeValidator();
         $v->range = $args;
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function int_validate($cmd, $args, $value)
+    protected function int_validate($key, $args, $value)
     {
         $v = new NumberValidator();
         $v->integerOnly = true;
@@ -241,11 +293,11 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function number_validate($cmd, $args, $value)
+    protected function number_validate($key, $args, $value)
     {
         $v = new NumberValidator();
         if (isset($args[0]) && $args[0] != "") {
@@ -261,32 +313,29 @@ class Rules
             $v->integerOnly = 'true' == $args[3];
         }
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function email_validate($cmd, $args, $value)
+    protected function email_validate($key, $value)
     {
         $v = new EmailValidator();
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function url_validate($cmd, $args, $value)
+    protected function url_validate($key, $value)
     {
         $v = new UrlValidator();
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function string_validate($cmd, $args, $value)
+    protected function string_validate($key, $args, $value)
     {
         $v = new StringValidator();
-        if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
-        }
         if (count($args) == 1) {
             $v->is = intval($args[0]);
         } else if (count($args) == 2) {
@@ -294,22 +343,22 @@ class Rules
             $v->max = intval($args[1]);
         }
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function required_validate($cmd, $args, $value)
+    protected function required_validate($key, $args, $value)
     {
         $v = new RequiredValidator();
         if (isset($args[0])) {
             $v->requiredValue = $args[0];
         }
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 
-    protected function cmp_validate($cmd, $args, $value)
+    protected function cmp_validate($key, $cmd, $args, $value)
     {
         $map = array(
             "eq" => "==",
@@ -322,11 +371,11 @@ class Rules
         $v = new CompareValidator();
         $v->operator = $map[$cmd];
         if (!isset($args[0])) {
-            $this->errors[] = 'Require Compare attribute';
+            $this->friendErr($key, 'Field:{attribute},Require Compare attribute');
             return;
         }
         if (!isset($this->data[$args[0]])) {
-            $this->errors[] = 'Compare attribute does not exist';
+            $this->friendErr($key, 'Field:{attribute},Compare attribute does not exist');
             return;
         }
         $v->compareValue = $this->data[$args[0]];
@@ -337,7 +386,7 @@ class Rules
             $v->allowEmpty = $args[2] == "0" ? false : true;
         }
         if (!$v->validate($value)) {
-            $this->errors[] = $v->message;
+            $this->friendErr($key, $v->message);
         }
     }
 }

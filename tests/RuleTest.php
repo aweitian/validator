@@ -170,7 +170,8 @@ class RuleTest extends PHPUnit_Framework_TestCase
                 'foo' => 'ba',
             )
         );
-
+        ;
+//        var_dump($rule->getErrors());
         $this->assertFalse($rule->validate());
 //        var_dump($rule->getErrors());
     }
