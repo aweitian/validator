@@ -1,0 +1,185 @@
+<?php
+
+class RuleTest extends PHPUnit_Framework_TestCase
+{
+    public function testRule1()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'required:qq|bail',
+            'bar' => 'gt:cmp',
+            'cmp' => 'int:4,9'
+        ));
+
+        $rule->setData(
+            array(
+                'foo' => 'qq',
+                'bar' => 5,
+                'cmp' => 4
+            )
+        );
+
+        $this->assertTrue($rule->validate());
+
+        $rule->setRules(array(
+            'foo' => 'required:qq|bail',
+            'bar' => 'gt:cmp',
+            'cmp' => 'int:4,9'
+        ));
+
+        $rule->setData(
+            array(
+                'bar' => 4,
+                'cmp' => 4
+            )
+        );
+
+        $this->assertFalse($rule->validate());
+    }
+
+
+    public function testRule2()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'required:qq|bail',
+            'bar' => 'gt:cmp',
+            'cmp' => 'int:4,9'
+        ));
+
+        $rule->setData(
+            array(
+                'bar' => 5,
+                'cmp' => 4
+            )
+        );
+
+        $this->assertFalse($rule->validate());
+        //var_dump($rule->getErrors());
+    }
+
+
+    public function testRule3()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'required|bail',
+            'bar' => 'range:a,b,c,dd,e',
+            'cmp' => 'int:4,9'
+        ));
+
+        $rule->setData(
+            array(
+                'foo' => 'ba',
+                'bar' => 'a',
+                'cmp' => 4
+            )
+        );
+
+        $this->assertTrue($rule->validate());
+
+        $rule->setRules(array(
+            'foo' => 'required|bail',
+            'bar' => 'range:a,b,c,dd,e',
+            'cmp' => 'str:5'
+        ));
+
+        $rule->setData(
+            array(
+                'foo' => 'ba',
+                'bar' => 'a',
+                'cmp' => '12135'
+            )
+        );
+
+        $this->assertTrue($rule->validate());
+
+        $rule->setData(
+            array(
+                'foo' => 'ba',
+                'bar' => 'a',
+                'cmp' => '1234'
+            )
+        );
+        $this->assertFalse($rule->validate());
+
+        //var_dump($rule->getErrors());
+    }
+
+
+
+
+    public function testRule4()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'required|bail',
+            'bar' => 'regexp:#^aa\d{3}$#',
+            'cmp' => 'email',
+            'url' => 'url'
+        ));
+
+        $rule->setData(
+            array(
+                'foo' => 'ba',
+                'bar' => 'aa123',
+                'cmp' => 'awei.tian@qqq.com',
+                'url' => 'http://a.com'
+            )
+        );
+
+        $this->assertTrue($rule->validate());
+
+
+        $rule->setData(
+            array(
+                'foo' => 'ba',
+                'bar' => 'a',
+                'cmp' => '12135'
+            )
+        );
+
+        $this->assertFalse($rule->validate());
+
+    }
+
+    public function testRule5()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'fun:check::c',
+
+        ));
+
+        $rule->setData(
+            array(
+                'foo' => 'foo',
+            )
+        );
+
+        $this->assertTrue($rule->validate());
+
+
+        $rule->setData(
+            array(
+                'foo' => 'ba',
+            )
+        );
+
+        $this->assertFalse($rule->validate());
+//        var_dump($rule->getErrors());
+    }
+}
+
+class check
+{
+    public function c($value)
+    {
+        return $value == 'foo';
+    }
+}
