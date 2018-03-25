@@ -27,16 +27,26 @@ class DateValidator extends Validator
             return true;
         switch ($this->mode) {
             case DateValidator::MODE_DATETIME:
-                return !!preg_match("/^(\d{4})[\/\-\.](0?[1-9]|1[012])[\/\-\.](0?[1-9]|[12][0-9]|3[01]) (0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9])$/", $value);
+                $ret = preg_match("/^(\d{4})[\/\-\.](0?[1-9]|1[012])[\/\-\.](0?[1-9]|[12][0-9]|3[01]) (0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9])$/", $value);
+                break;
             case DateValidator::MODE_DATE:
-                return !!preg_match("/^(\d{4})[\/\-\.](0?[1-9]|1[012])[\/\-\.](0?[1-9]|[12][0-9]|3[01])$/", $value);
+                $ret = preg_match("/^(\d{4})[\/\-\.](0?[1-9]|1[012])[\/\-\.](0?[1-9]|[12][0-9]|3[01])$/", $value);
+                break;
             case DateValidator::MODE_TIME:
-                return !!preg_match("/^(0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9])$/", $value);
+                $ret = preg_match("/^(0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9]):(0?[0-9]|[1-6][0-9])$/", $value);
+                break;
             case DateValidator::MODE_YEAR:
-                return !!preg_match("#^\d{4}$#", $value);
+                $ret = preg_match("#^\d{4}$#", $value);
+                break;
             default:
+                $this->message = "invalid datetime mode";
+                return false;
                 break;
         }
+        if ($ret) {
+            return true;
+        }
+        $this->message = '{attribute} is invalid format.';
         return false;
     }
 }

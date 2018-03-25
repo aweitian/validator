@@ -5,21 +5,12 @@ class ErrorExTest extends PHPUnit_Framework_TestCase
     public function testRule3()
     {
 
-        $rule = new \Aw\Validator\Rules();
-
-        $rule->setRules(array(
-            'bar' => 'str:3|required:xx'
-        ));
+        $rule = new \Aw\Validator\DateValidator();
 
 
-        $rule->setData(
-            array(
-                'd' => '22',
-            )
-        );
 
-        $this->assertFalse($rule->validate());
-        $this->assertEquals(count($rule->getErrors()), 1);
+        $rule->validate('20');
+        var_dump($rule->message);
 //        var_dump($rule->getErrors());
 //
 //        $rule->setMode(\Aw\Validator\Rules::MODE_SINGLE);
