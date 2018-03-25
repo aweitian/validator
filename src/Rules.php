@@ -13,6 +13,9 @@ class Rules
     protected $rules = array();
     protected $errors = array();
     protected $isBail = false;
+    protected $isEmpty = null;
+    protected $isStrict = null;
+
     protected $data = array();
 
     protected $text = array();
@@ -140,8 +143,13 @@ class Rules
     }
 
     /***
-     * bool:0,1  $strict|$allowEmpty
-     * [eq|ne|gt|ge|lt|le]:pwd2,0,0 $strict|$allowEmpty
+     * CMD[:参数列表] | CMD[:参数列表]
+     *
+     * empty 表示允许为空 (通用)
+     * strict 严格开关 (通用)
+     *
+     * bool
+     * [eq|ne|gt|ge|lt|le]:pwd2
      * email
      * url
      * required:taw
@@ -158,24 +166,30 @@ class Rules
     public function validateRule($string_rules, $value, $key)
     {
         $this->isBail = false;
+        $this->isEmpty = null;
+        $this->isStrict = null;
         $rules = explode("|", $string_rules);
         foreach ($rules as $rule) {
             $cmd = explode(":", $rule, 2);
             if (isset($cmd[1])) {
-                $reg = $cmd[1];
                 $args = explode(",", $cmd[1]);
             } else {
-                $reg = array();
                 $args = array();
             }
 
             $cmd = $cmd[0];
             switch ($cmd) {
+                case 'empty':
+                    $this->isEmpty = true;
+                    continue;
+                case 'strict':
+                    $this->isStrict = true;
+                    continue;
                 case "bail":
                     $this->isBail = true;
-                    return;
+                    continue;
                 case "bool":
-                    $this->bool_validate($key, $args, $value);
+                    $this->bool_validate($key, $value);
                     break;
                 case "eq":
                 case "ne":
@@ -204,12 +218,17 @@ class Rules
                     $this->number_validate($key, $args, $value);
                     break;
                 case "regexp":
-                    $this->regexp_validate($key, $reg, $value);
+                    $this->regexp_validate($key, $args, $value);
                     break;
                 case "url":
                     $this->url_validate($key, $value);
                     break;
                 case "fun":
+                    if (!isset($args[0])) {
+                        $this->friendErr($key, "{attribute} requires callback.");
+                        break;
+                    }
+                    $reg = $args[0];
                     if ($reg instanceof \Closure || (is_array($reg) && is_callable($reg))) {
                         $ret = call_user_func_array($reg, array($value));
                         if ($ret !== true) {
@@ -249,15 +268,18 @@ class Rules
         }
     }
 
-    protected function bool_validate($key, $args, $value)
+    protected function bool_validate($key, $value)
     {
         $v = new BooleanValidator();
-        if (isset($args[0])) {
-            $v->strict = $args[0] == "0" ? false : true;
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
         }
-        if (isset($args[1])) {
-            $v->allowEmpty = $args[1] == "0" ? false : true;
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
         }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -266,7 +288,14 @@ class Rules
     protected function regexp_validate($key, $reg, $value)
     {
         $v = new RegularExpressionValidator();
-        $v->pattern = $reg;
+        $v->pattern = $reg[0];
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -276,6 +305,15 @@ class Rules
     {
         $v = new RangeValidator();
         $v->range = $args;
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -290,6 +328,14 @@ class Rules
         }
         if (isset($args[1])) {
             $v->max = intval($args[1]);
+        }
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
         }
 
         if (!$v->validate($value)) {
@@ -312,6 +358,13 @@ class Rules
         if (isset($args[3])) {
             $v->integerOnly = 'true' == $args[3];
         }
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -328,6 +381,13 @@ class Rules
     protected function url_validate($key, $value)
     {
         $v = new UrlValidator();
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -341,9 +401,16 @@ class Rules
         } else if (count($args) == 2) {
             $v->min = intval($args[0]);
             $v->max = intval($args[1]);
-        } else {
-            $v->allowEmpty = true;
         }
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -355,6 +422,15 @@ class Rules
         if (isset($args[0])) {
             $v->requiredValue = $args[0];
         }
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -381,11 +457,12 @@ class Rules
             return;
         }
         $v->compareValue = $this->data[$args[0]];
-        if (isset($args[1])) {
-            $v->strict = $args[1] == "0" ? false : true;
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
         }
-        if (isset($args[2])) {
-            $v->allowEmpty = $args[2] == "0" ? false : true;
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
         }
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);

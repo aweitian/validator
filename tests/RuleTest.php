@@ -188,10 +188,38 @@ class RuleTest extends PHPUnit_Framework_TestCase
                 //'foo' => '',
             )
         );
-        $this->assertTrue($rule->validate());
+        $this->assertFalse($rule->validate());
         $rule->setData(
             array(
                 'foo' => 'ba',
+            )
+        );
+        $this->assertTrue($rule->validate());
+    }
+
+
+    public function testRule7()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'empty|str:2',
+        ));
+        $rule->setData(
+            array(
+                'foo' => '',
+            )
+        );
+        $this->assertTrue($rule->validate());
+        $rule->setData(
+            array(
+                'foo' => 'bar',
+            )
+        );
+        $this->assertFalse($rule->validate());
+        $rule->setData(
+            array(
+                'foo' => 'dd',
             )
         );
         $this->assertTrue($rule->validate());

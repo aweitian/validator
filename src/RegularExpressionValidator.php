@@ -13,12 +13,6 @@ class RegularExpressionValidator extends Validator
      * @var string the regular expression to be matched with
      */
     public $pattern;
-    /**
-     *
-     * @var boolean whether the attribute value can be null or empty. Defaults to true,
-     *      meaning that if the attribute is empty, it is considered valid.
-     */
-    public $allowEmpty = true;
 
     /**
      * @inheritdoc

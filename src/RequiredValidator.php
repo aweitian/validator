@@ -18,15 +18,6 @@ class RequiredValidator extends Validator
      * @since 1.0.10
      */
     public $requiredValue;
-    /**
-     *
-     * @var boolean whether the comparison to {@link requiredValue} is strict.
-     *      When this is true, the attribute value and type must both match those of {@link requiredValue}.
-     *      Defaults to false, meaning only the value needs to be matched.
-     *      This property is only used when {@link requiredValue} is not null.
-     * @since 1.0.10
-     */
-    public $strict = false;
 
     /**
      * @inheritdoc

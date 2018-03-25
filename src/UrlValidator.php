@@ -13,12 +13,6 @@ class UrlValidator extends Validator
      * @var string the regular expression used to validates the attribute value.
      */
     public $pattern = '/^(http|https):\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)/i';
-    /**
-     *
-     * @var boolean whether the attribute value can be null or empty. Defaults to true,
-     *      meaning that if the attribute is empty, it is considered valid.
-     */
-    public $allowEmpty = true;
 
     /**
      * @inheritdoc

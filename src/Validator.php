@@ -16,6 +16,13 @@ abstract class Validator
     public $allowEmpty = false;
     /**
      *
+     * @var boolean whether the comparison to {@link trueValue} and {@link falseValue} is strict.
+     *      When this is true, the attribute value and type must both match those of {@link trueValue} or {@link falseValue}.
+     *      Defaults to false, meaning only the value needs to be matched.
+     */
+    public $strict = false;
+    /**
+     *
      * @var string {attribute} as placeholder
      */
     public $message;
