@@ -341,6 +341,8 @@ class Rules
         } else if (count($args) == 2) {
             $v->min = intval($args[0]);
             $v->max = intval($args[1]);
+        } else {
+            $v->allowEmpty = true;
         }
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
