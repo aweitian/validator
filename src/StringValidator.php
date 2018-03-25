@@ -42,12 +42,12 @@ class StringValidator extends Validator
     {
         if ($this->allowEmpty && $this->isEmpty($value))
             return true;
-        if (!$this->allowEmpty) {
-            if (is_null($value)) {
-                $this->message = '{attribute} is required.';
-                return false;
-            }
+
+        if (is_null($value)) {
+            $this->message = '{attribute} is required.';
+            return false;
         }
+
         if ($this->encoding !== false && function_exists('mb_strlen'))
             $length = mb_strlen($value, $this->encoding);
         else

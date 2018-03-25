@@ -34,6 +34,9 @@ class RequiredValidator extends Validator
         } else if ($this->isEmpty($value)) {
             $this->message = '{attribute} cannot be blank.';
             return false;
+        } else if (is_null($value)) {
+            $this->message = '{attribute} cannot be null.';
+            return false;
         }
         return true;
     }

@@ -543,8 +543,12 @@ class Rules
         if (count($args) == 1) {
             $v->is = intval($args[0]);
         } else if (count($args) == 2) {
-            $v->min = intval($args[0]);
-            $v->max = intval($args[1]);
+            if ($args[0] != '') {
+                $v->min = intval($args[0]);
+            }
+            if ($args[1] != '') {
+                $v->max = intval($args[1]);
+            }
         }
 
         if (is_bool($this->isEmpty)) {

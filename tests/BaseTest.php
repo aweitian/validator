@@ -8,9 +8,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\BooleanValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
         $this->assertTrue($validator->validate(1));
         $this->assertFalse($validator->validate(0));
         $validator->strict = true;
@@ -25,6 +27,7 @@ class BaseTest extends PHPUnit_Framework_TestCase
         $validator = new CompareValidator();
         $validator->allowEmpty = true;
         $this->assertTrue($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertTrue($validator->validate(null)); //compare is null
         $validator->compareValue = 5;
@@ -46,9 +49,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\DateValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
-        $this->assertFalse($validator->validate(null)); //compare is null
+        $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
         $this->assertTrue($validator->validate('2017-1-20 10:1:1'));
         $this->assertTrue($validator->validate('2017/1/20 10:1:1'));
         $this->assertTrue($validator->validate('2017.1.20 10:1:1'));
@@ -76,9 +81,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\EmailValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
         $this->assertTrue($validator->validate("awei.tian@qq.com"));
         $this->assertFalse($validator->validate("gg#aa.c"));
     }
@@ -87,9 +94,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\NumberValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
 
         $validator->max = 123;
         $this->assertTrue($validator->validate(0.1));
@@ -114,7 +123,8 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\RangeValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
 
@@ -146,9 +156,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\RegularExpressionValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
 
         $validator->pattern = '#^\d+$#';
         $this->assertTrue($validator->validate(123));
@@ -163,6 +175,7 @@ class BaseTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($validator->validate(null));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
 
         $this->assertTrue($validator->validate(123));
 
@@ -175,9 +188,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\StringValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
 
         $validator->max = 5;
         $this->assertTrue($validator->validate('12345'));
@@ -205,9 +220,11 @@ class BaseTest extends PHPUnit_Framework_TestCase
     {
         $validator = new \Aw\Validator\UrlValidator();
         $validator->allowEmpty = true;
-        $this->assertTrue($validator->validate(null));
+        $this->assertFalse($validator->validate(null));
+        $this->assertTrue($validator->validate(''));
         $validator->allowEmpty = false;
         $this->assertFalse($validator->validate(null));
+        $this->assertFalse($validator->validate(''));
         $this->assertTrue($validator->validate('http://foo.com'));
         $this->assertTrue($validator->validate('http://www.foo.com'));
         $this->assertTrue($validator->validate('http://www.foo.bin'));

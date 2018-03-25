@@ -48,7 +48,7 @@ abstract class Validator
         if (is_callable($value)) {
             return call_user_func($this->allowEmpty, $value);
         } else {
-            return $value === null || $value === array() || $value === '';
+            return $value === array() || $value === '';
         }
     }
 
