@@ -10,9 +10,11 @@
 namespace Aw\Validator;
 class Rules
 {
+    const MODE_SINGLE = 0;
+    const MODE_MUT = 1;
     protected $rules = array();
     protected $errors = array();
-    protected $isBail = false;
+    protected $isBail = true;
     protected $isEmpty = null;
     protected $isStrict = null;
 
@@ -20,8 +22,26 @@ class Rules
 
     protected $text = array();
 
+    public $mode = self::MODE_MUT;
+
 
     protected $overrideErrors = array();
+
+    /**
+     * @return int
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @param int $mode
+     */
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
+    }
 
     /**
      * @return array
@@ -115,7 +135,7 @@ class Rules
         foreach ($this->rules as $key => $rule) {
             $val = isset($this->data[$key]) ? $this->data[$key] : null;
             $this->validateRule($rule, $val, $key);
-            if (!empty($this->errors) && $this->isBail) {
+            if (!empty($this->errors) && $this->mode == self::MODE_SINGLE) {
                 break;
             }
         }
@@ -165,11 +185,17 @@ class Rules
      */
     public function validateRule($string_rules, $value, $key)
     {
-        $this->isBail = false;
+        $this->isBail = true;
         $this->isEmpty = null;
         $this->isStrict = null;
         $rules = explode("|", $string_rules);
+        $err = count($this->errors);//本轮是否有错误
         foreach ($rules as $rule) {
+            //设置了Bail,并且已出现错误
+            if (count($this->errors) != $err && $this->isBail === true) {
+                return;
+            }
+
             $cmd = explode(":", $rule, 2);
             if (isset($cmd[1])) {
                 $args = explode(",", $cmd[1]);
@@ -186,7 +212,7 @@ class Rules
                     $this->isStrict = true;
                     continue;
                 case "bail":
-                    $this->isBail = true;
+                    $this->isBail = false;
                     continue;
                 case "bool":
                     $this->bool_validate($key, $value);

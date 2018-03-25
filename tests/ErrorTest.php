@@ -32,5 +32,72 @@ class ErrorTest extends PHPUnit_Framework_TestCase
         var_dump($rule->getErrors());
     }
 
+    public function testRule2()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'str:2|required:qq'
+        ));
+
+
+        $rule->setData(
+            array(
+                'foo' => '123',
+            )
+        );
+
+        $this->assertFalse($rule->validate());
+        $this->assertEquals(count($rule->getErrors()) ,1);
+
+        $rule->setRules(array(
+            'foo' => 'bail|str:2|required:qq'
+        ));
+        $this->assertFalse($rule->validate());
+        $this->assertEquals(count($rule->getErrors()) ,2);
+    }
+
+
+    public function testRule3()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'str:2|required:qq',
+            'bar' => 'str:3|required:xx'
+        ));
+
+
+        $rule->setData(
+            array(
+                'foo' => '123',
+                'd' => '22',
+            )
+        );
+
+        $this->assertFalse($rule->validate());
+        $this->assertEquals(count($rule->getErrors()) ,2);
+//        var_dump($rule->getErrors());
+
+        $rule->setMode(\Aw\Validator\Rules::MODE_SINGLE);
+        $this->assertFalse($rule->validate());
+        $this->assertEquals(count($rule->getErrors()) ,1);
+//        var_dump($rule->getErrors());
+
+        $rule->setRules(array(
+            'foo' => 'bail|str:2|required:qq',
+            'bar' => 'bail|str:3|required:xx'
+        ));
+        $rule->setMode(\Aw\Validator\Rules::MODE_MUT);
+        $this->assertFalse($rule->validate());
+        $this->assertEquals(count($rule->getErrors()) ,4);
+//        var_dump($rule->getErrors());
+
+
+        $rule->setMode(\Aw\Validator\Rules::MODE_SINGLE);
+        $this->assertFalse($rule->validate());
+        $this->assertEquals(count($rule->getErrors()) ,2);
+//        var_dump($rule->getErrors());
+    }
 }
 
