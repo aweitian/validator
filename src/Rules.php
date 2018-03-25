@@ -76,6 +76,30 @@ class Rules
     }
 
     /**
+     * @param $key
+     * @param $rule
+     * @return $this
+     */
+    public function addRule($key,$rule)
+    {
+        $this->rules[$key] = $rule;
+        return $this;
+    }
+
+    /**
+     * @param $key
+     * @return $this
+     */
+    public function removeRule($key)
+    {
+        if (isset($this->rules[$key]))
+        {
+            unset($this->rules[$key]);
+        }
+        return $this;
+    }
+
+    /**
      * @param array $rules
      * @return $this
      */
