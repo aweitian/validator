@@ -214,6 +214,18 @@ class Rules
                 case "int":
                     $this->int_validate($key, $args, $value);
                     break;
+                case "date":
+                    $this->date_validate($key, $value);
+                    break;
+                case "time":
+                    $this->time_validate($key, $value);
+                    break;
+                case "year":
+                    $this->year_validate($key, $value);
+                    break;
+                case "datetime":
+                    $this->datetime_validate($key, $value);
+                    break;
                 case "number":
                     $this->number_validate($key, $args, $value);
                     break;
@@ -305,6 +317,79 @@ class Rules
     {
         $v = new RangeValidator();
         $v->range = $args;
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message);
+        }
+    }
+
+
+    protected function year_validate($key, $value)
+    {
+        $v = new DateValidator();
+        $v->mode = DateValidator::MODE_YEAR;
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message);
+        }
+    }
+
+    protected function time_validate($key, $value)
+    {
+        $v = new DateValidator();
+        $v->mode = DateValidator::MODE_TIME;
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message);
+        }
+    }
+
+    protected function datetime_validate($key, $value)
+    {
+        $v = new DateValidator();
+        $v->mode = DateValidator::MODE_DATETIME;
+
+        if (is_bool($this->isEmpty)) {
+            $v->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $v->strict = $this->isStrict;
+        }
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message);
+        }
+    }
+
+    protected function date_validate($key, $value)
+    {
+        $v = new DateValidator();
+        $v->mode = DateValidator::MODE_DATE;
 
         if (is_bool($this->isEmpty)) {
             $v->allowEmpty = $this->isEmpty;

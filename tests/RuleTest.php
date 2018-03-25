@@ -224,6 +224,36 @@ class RuleTest extends PHPUnit_Framework_TestCase
         );
         $this->assertTrue($rule->validate());
     }
+
+
+
+    public function testRule8()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'date',
+            'bar' => 'datetime',
+            'lol' => 'time',
+            'x' => 'year',
+        ));
+        $rule->setData(
+            array(
+                'foo' => '2017-2-2',
+                'bar' => '2018-10-25 1:10:1',
+                'lol' => '1:10:1',
+                'x' => '2018',
+            )
+        );
+        $this->assertTrue($rule->validate());
+        $rule->setData(
+            array(
+                'foo' => 'bar',
+            )
+        );
+        $this->assertFalse($rule->validate());
+    }
+
 }
 
 class check

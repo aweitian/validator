@@ -14,6 +14,10 @@
 - '[eq|ne|gt|ge|lt|le]:pwd2'
 - email
 - url
+- date
+- datetime
+- time
+- year
 - required:taw   required
 - str:20   str:3,9   str:,2
 - range:aaa,bbb,ccc,dddd
