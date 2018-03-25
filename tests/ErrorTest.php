@@ -54,7 +54,7 @@ class ErrorTest extends PHPUnit_Framework_TestCase
             'foo' => 'bail|str:2|required:qq'
         ));
         $this->assertFalse($rule->validate());
-        $this->assertEquals(count($rule->getErrors()) ,2);
+        $this->assertEquals(count($rule->getErrors()) ,1);
     }
 
 
@@ -90,13 +90,17 @@ class ErrorTest extends PHPUnit_Framework_TestCase
         ));
         $rule->setMode(\Aw\Validator\Rules::MODE_MUT);
         $this->assertFalse($rule->validate());
-        $this->assertEquals(count($rule->getErrors()) ,4);
+//        var_dump($rule->getErrors());
+        $err = $rule->getErrors();
+        $this->assertEquals(count($err) ,2);
+        var_dump($err);
+        $this->assertTrue(is_array($err['foo']));
 //        var_dump($rule->getErrors());
 
 
         $rule->setMode(\Aw\Validator\Rules::MODE_SINGLE);
         $this->assertFalse($rule->validate());
-        $this->assertEquals(count($rule->getErrors()) ,2);
+        $this->assertEquals(count($rule->getErrors()) ,1);
 //        var_dump($rule->getErrors());
     }
 }

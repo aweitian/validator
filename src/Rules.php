@@ -80,7 +80,7 @@ class Rules
      * @param $rule
      * @return $this
      */
-    public function addRule($key,$rule)
+    public function addRule($key, $rule)
     {
         $this->rules[$key] = $rule;
         return $this;
@@ -92,8 +92,7 @@ class Rules
      */
     public function removeRule($key)
     {
-        if (isset($this->rules[$key]))
-        {
+        if (isset($this->rules[$key])) {
             unset($this->rules[$key]);
         }
         return $this;
@@ -183,7 +182,17 @@ class Rules
                 )
             );
         }
-        $this->errors[] = $error;
+
+        if (!isset($this->errors[$key])) {
+            $this->errors[$key] = $error;
+        } else if (is_string($this->errors[$key])) {
+            $this->errors[$key] = array($this->errors[$key], $error);
+        } else if (is_array($this->errors[$key])) {
+            $this->errors[$key][] = $error;
+        } else {
+            $this->errors[$key] = $error;
+        }
+
     }
 
     /***
