@@ -8,6 +8,7 @@ namespace Aw\Validator;
 
 abstract class Validator
 {
+    public $lastValue = null;
     /**
      * @var bool
      */
@@ -44,16 +45,19 @@ abstract class Validator
 
         if ($this->isArray) {
             if (!is_array($value)) {
+                $this->lastValue = $value;
                 $this->message = 'is not a array';
                 return false;
             }
             foreach ($value as $item) {
                 if (!$this->validateItem($item)) {
+                    $this->lastValue = $value;
                     return false;
                 }
             }
             return true;
         } else {
+            $this->lastValue = $value;
             return $this->validateItem($value);
         }
     }
