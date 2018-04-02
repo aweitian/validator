@@ -22,7 +22,7 @@ class RequiredValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validate($value)
+    public function validateItem($value)
     {
         if ($this->requiredValue !== null) {
             if (!$this->strict && $value != $this->requiredValue || $this->strict && $value !== $this->requiredValue) {

@@ -47,7 +47,7 @@ class EmailValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validate($value)
+    public function validateItem($value)
     {
         if ($this->allowEmpty && $this->isEmpty($value))
             return true;

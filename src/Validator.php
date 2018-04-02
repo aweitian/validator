@@ -9,6 +9,11 @@ namespace Aw\Validator;
 abstract class Validator
 {
     /**
+     * @var bool
+     */
+    public $isArray = false;
+
+    /**
      *
      * @var boolean|\Closure whether the attribute value can be null or empty. Defaults to true,
      *      meaning that if the attribute is empty, it is considered valid.
@@ -32,7 +37,26 @@ abstract class Validator
      * @param $value
      * @return bool
      */
-    abstract public function validate($value);
+    abstract public function validateItem($value);
+
+    public function validate($value)
+    {
+
+        if ($this->isArray) {
+            if (!is_array($value)) {
+                $this->message = 'is not a array';
+                return false;
+            }
+            foreach ($value as $item) {
+                if (!$this->validateItem($item)) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return $this->validateItem($value);
+        }
+    }
 
     /**
      * Checks if the given value is empty.
