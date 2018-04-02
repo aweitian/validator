@@ -17,6 +17,7 @@ class Rules
     protected $isBail = true;
     protected $isEmpty = null;
     protected $isStrict = null;
+    protected $isArray = null;
 
     protected $data = array();
 
@@ -152,10 +153,13 @@ class Rules
         }
         $this->errors = array();
         $this->isBail = false;
+
         if (!is_null($data)) {
             $this->data = $data;
         }
+
         foreach ($this->rules as $key => $rule) {
+            $this->isArray = false;
             $val = isset($this->data[$key]) ? $this->data[$key] : null;
             $this->validateRule($rule, $val, $key);
             if (!empty($this->errors) && $this->mode == self::MODE_SINGLE) {
@@ -200,6 +204,7 @@ class Rules
      *
      * empty 表示允许为空 (通用)
      * strict 严格开关 (通用)
+     * array 数组批量验证 (通用)
      *
      * bool
      * [eq|ne|gt|ge|lt|le]:pwd2
@@ -240,6 +245,9 @@ class Rules
             switch ($cmd) {
                 case 'empty':
                     $this->isEmpty = true;
+                    continue;
+                case 'array':
+                    $this->isArray = true;
                     continue;
                 case 'strict':
                     $this->isStrict = true;
@@ -351,6 +359,10 @@ class Rules
             $v->strict = $this->isStrict;
         }
 
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -367,6 +379,11 @@ class Rules
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
         }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -383,6 +400,10 @@ class Rules
 
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
+        }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
         }
 
         if (!$v->validate($value)) {
@@ -404,6 +425,10 @@ class Rules
             $v->strict = $this->isStrict;
         }
 
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -420,6 +445,10 @@ class Rules
 
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
+        }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
         }
 
         if (!$v->validate($value)) {
@@ -440,6 +469,10 @@ class Rules
             $v->strict = $this->isStrict;
         }
 
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -456,6 +489,10 @@ class Rules
 
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
+        }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
         }
 
         if (!$v->validate($value)) {
@@ -480,6 +517,10 @@ class Rules
 
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
+        }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
         }
 
         if (!$v->validate($value)) {
@@ -509,6 +550,11 @@ class Rules
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
         }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -517,6 +563,12 @@ class Rules
     protected function email_validate($key, $value)
     {
         $v = new EmailValidator();
+
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -532,6 +584,11 @@ class Rules
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
         }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -559,6 +616,10 @@ class Rules
             $v->strict = $this->isStrict;
         }
 
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }
@@ -577,6 +638,10 @@ class Rules
 
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
+        }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
         }
 
         if (!$v->validate($value)) {
@@ -612,6 +677,11 @@ class Rules
         if (is_bool($this->isStrict)) {
             $v->strict = $this->isStrict;
         }
+
+        if (is_bool($this->isArray)) {
+            $v->isArray = $this->isArray;
+        }
+
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message);
         }

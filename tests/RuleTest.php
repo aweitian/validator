@@ -110,8 +110,6 @@ class RuleTest extends PHPUnit_Framework_TestCase
     }
 
 
-
-
     public function testRule4()
     {
         $rule = new \Aw\Validator\Rules();
@@ -169,8 +167,7 @@ class RuleTest extends PHPUnit_Framework_TestCase
             array(
                 'foo' => 'ba',
             )
-        );
-        ;
+        );;
 //        var_dump($rule->getErrors());
         $this->assertFalse($rule->validate());
 //        var_dump($rule->getErrors());
@@ -184,8 +181,7 @@ class RuleTest extends PHPUnit_Framework_TestCase
             'foo' => 'str',
         ));
         $rule->setData(
-            array(
-                //'foo' => '',
+            array(//'foo' => '',
             )
         );
         $this->assertFalse($rule->validate());
@@ -226,7 +222,6 @@ class RuleTest extends PHPUnit_Framework_TestCase
     }
 
 
-
     public function testRule8()
     {
         $rule = new \Aw\Validator\Rules();
@@ -246,6 +241,53 @@ class RuleTest extends PHPUnit_Framework_TestCase
             )
         );
         $this->assertTrue($rule->validate());
+        $rule->setData(
+            array(
+                'foo' => 'bar',
+            )
+        );
+        $this->assertFalse($rule->validate());
+    }
+
+
+    public function testRule9()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'array|date',
+            'bar' => 'datetime',
+            'lol' => 'time',
+            'x' => 'year',
+        ));
+        $rule->setData(
+            array(
+                'foo' => array('2017-2-2', '2017-2-12'),
+                'bar' => '2018-10-25 1:10:1',
+                'lol' => '1:10:1',
+                'x' => '2018',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+
+        $rule->setRules(array(
+            'foo' => 'array|date',
+            'bar' => 'datetime',
+            'lol' => 'time',
+            'x' => 'array|year',
+        ));
+        $rule->setData(
+            array(
+                'foo' => array('2017-2-2', '2017-2-12'),
+                'bar' => '2018-10-25 1:10:1',
+                'lol' => '1:10:1',
+                'x' => '2018',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+//        var_dump($rule->getErrors());
         $rule->setData(
             array(
                 'foo' => 'bar',
