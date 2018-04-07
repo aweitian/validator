@@ -296,6 +296,44 @@ class RuleTest extends PHPUnit_Framework_TestCase
         $this->assertFalse($rule->validate());
     }
 
+
+    public function testRule10()
+    {
+        $rule = new \Aw\Validator\Rules();
+        $rule->setRules(array(
+            'foo' => 'array|int',
+        ));
+        $rule->setData(
+            array(
+                'foo' => array('2017', '12'),
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+    }
+
+
+    public function testRule11()
+    {
+        $rule = new \Aw\Validator\Rules();
+        $rule->setRules(array(
+            'foo' => 'number:,,true',
+        ));
+        $rule->setData(
+            array(
+                'foo' => 1.2,
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+        $rule->setData(
+            array(
+                'foo' => -1.2,
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+    }
 }
 
 class check

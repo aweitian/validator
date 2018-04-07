@@ -534,7 +534,7 @@ class Rules
         if (isset($args[0]) && $args[0] != "") {
             $v->min = intval($args[0]);
         }
-        if (isset($args[1])) {
+        if (isset($args[1]) && $args[0] != "") {
             $v->max = intval($args[1]);
         }
         if (isset($args[2])) {

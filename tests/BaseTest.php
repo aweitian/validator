@@ -116,6 +116,10 @@ class BaseTest extends PHPUnit_Framework_TestCase
 
         $validator->unsignedOnly = true;
         $this->assertFalse($validator->validate(-1));
+        $validator->integerOnly = false;
+        $this->assertFalse($validator->validate(-1.12));
+        $this->assertFalse($validator->validate(-2));
+        $this->assertTrue($validator->validate(2.36));
 
     }
 
