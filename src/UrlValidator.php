@@ -13,6 +13,9 @@ class UrlValidator extends Validator
      * @var string the regular expression used to validates the attribute value.
      */
     public $pattern = '/^(http|https):\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)/i';
+    public $domain = '/^(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)/i';
+
+    public $isDomain = false;
 
     /**
      * @inheritdoc
@@ -30,7 +33,7 @@ class UrlValidator extends Validator
 
     protected function validateValue($value)
     {
-        return is_string($value) && preg_match($this->pattern, $value);
+        return is_string($value) && preg_match($this->isDomain ? $this->domain : $this->pattern, $value);
     }
 }
 

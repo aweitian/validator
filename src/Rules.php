@@ -18,13 +18,15 @@ class Rules
     protected $isEmpty = null;
     protected $isStrict = null;
     protected $isArray = null;
+    protected $isStrSeparator = null;
+    protected $strSeparator = null;
 
     protected $data = array();
 
     protected $text = array();
 
     public $mode = self::MODE_MUT;
-
+    public $lastMalignantValue = null;
 
     protected $overrideErrors = array();
 
@@ -145,6 +147,7 @@ class Rules
      * @param array $data
      * @param array $rules
      * @return bool
+     * @throws \ReflectionException
      */
     public function validate(array $data = null, array $rules = null)
     {
@@ -160,6 +163,7 @@ class Rules
 
         foreach ($this->rules as $key => $rule) {
             $this->isArray = false;
+            $this->isStrSeparator = false;
             $val = isset($this->data[$key]) ? $this->data[$key] : null;
             $this->validateRule($rule, $val, $key);
             if (!empty($this->errors) && $this->mode == self::MODE_SINGLE) {
@@ -169,7 +173,7 @@ class Rules
         return empty($this->errors);
     }
 
-    protected function friendErr($key, $error)
+    protected function friendErr($key, $error, $lastMalignant = null)
     {
         if (isset($this->overrideErrors[$key])) {
             $error = strtr(
@@ -187,6 +191,10 @@ class Rules
             );
         }
 
+        if (!is_null($lastMalignant) && $lastMalignant !== false) {
+            $error = $error . " last malignant value is:" . (string)$lastMalignant;
+        }
+
         if (!isset($this->errors[$key])) {
             $this->errors[$key] = $error;
         } else if (is_string($this->errors[$key])) {
@@ -199,17 +207,27 @@ class Rules
 
     }
 
+    protected function finishValidate(Validator $validator)
+    {
+        if ($this->isArray || $this->isStrSeparator) {
+            if ($validator->getLastValue()) {
+                $this->lastMalignantValue = $validator->getLastValue();
+            }
+        }
+    }
+
     /***
      * CMD[:参数列表] | CMD[:参数列表]
      *
      * empty 表示允许为空 (通用)
      * strict 严格开关 (通用)
      * array 数组批量验证 (通用)
+     * separator 字符分隔数组批量验证 (通用)
      *
      * bool
      * [eq|ne|gt|ge|lt|le]:pwd2
      * email
-     * url
+     * url:dm
      * required:taw
      * str:20   str:3,9  一个数字为is,两个为min,max
      * range:aaa,bbb,ccc,dddd
@@ -220,12 +238,16 @@ class Rules
      * @param $string_rules
      * @param $value
      * @param $key
+     * @throws \ReflectionException
      */
     public function validateRule($string_rules, $value, $key)
     {
         $this->isBail = true;
         $this->isEmpty = null;
         $this->isStrict = null;
+        $this->isStrSeparator = null;
+        $this->strSeparator = null;
+        $this->lastMalignantValue = null;
         $rules = explode("|", $string_rules);
         $err = count($this->errors);//本轮是否有错误
         foreach ($rules as $rule) {
@@ -248,6 +270,18 @@ class Rules
                     continue;
                 case 'array':
                     $this->isArray = true;
+                    continue;
+                case "separator":
+                    if (isset($args[0])) {
+                        if ($args[0] == Validator::STR_SEPARATOR_COLON) {
+                            $this->strSeparator = ':';
+                        } elseif ($args[0] == Validator::STR_SEPARATOR_OR) {
+                            $this->strSeparator = '|';
+                        } else {
+                            $this->strSeparator = $args[0];
+                        }
+                    }
+                    $this->isStrSeparator = true;
                     continue;
                 case 'strict':
                     $this->isStrict = true;
@@ -300,7 +334,7 @@ class Rules
                     $this->regexp_validate($key, $args, $value);
                     break;
                 case "url":
-                    $this->url_validate($key, $value);
+                    $this->url_validate($key, $args, $value);
                     break;
                 case "fun":
                     if (!isset($args[0])) {
@@ -364,8 +398,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function regexp_validate($key, $reg, $value)
@@ -385,8 +421,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function range_validate($key, $args, $value)
@@ -407,8 +445,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
 
@@ -430,8 +470,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function time_validate($key, $value)
@@ -452,8 +494,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function datetime_validate($key, $value)
@@ -474,8 +518,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function date_validate($key, $value)
@@ -496,8 +542,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function int_validate($key, $args, $value)
@@ -524,8 +572,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function number_validate($key, $args, $value)
@@ -556,8 +606,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function email_validate($key, $value)
@@ -570,11 +622,13 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
-    protected function url_validate($key, $value)
+    protected function url_validate($key, $args, $value)
     {
         $v = new UrlValidator();
         if (is_bool($this->isEmpty)) {
@@ -589,9 +643,15 @@ class Rules
             $v->isArray = $this->isArray;
         }
 
-        if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+        if (isset($args[0]) && $args[0] == "dm") {
+            $v->isDomain = true;
         }
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message, $v->lastValue);
+        }
+
+        $this->finishValidate($v);
     }
 
     protected function string_validate($key, $args, $value)
@@ -621,8 +681,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function required_validate($key, $args, $value)
@@ -645,8 +707,10 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 
     protected function cmp_validate($key, $cmd, $args, $value)
@@ -683,7 +747,9 @@ class Rules
         }
 
         if (!$v->validate($value)) {
-            $this->friendErr($key, $v->message);
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
+
+        $this->finishValidate($v);
     }
 }

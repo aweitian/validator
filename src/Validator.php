@@ -8,12 +8,26 @@ namespace Aw\Validator;
 
 abstract class Validator
 {
+    const STR_SEPARATOR_OR = '{or}';
+    const STR_SEPARATOR_COLON = '{colon}';
+    /**
+     * 数组验证失败的值
+     * @var null
+     */
     public $lastValue = null;
     /**
+     * 数组验证
      * @var bool
      */
     public $isArray = false;
 
+    /**
+     * 逗号分隔的数组验证
+     * @var bool
+     */
+    public $isStrSeparator = false;
+
+    public $strSeparator = ',';
     /**
      *
      * @var boolean|\Closure whether the attribute value can be null or empty. Defaults to true,
@@ -42,7 +56,6 @@ abstract class Validator
 
     public function validate($value)
     {
-
         if ($this->isArray) {
             if (!is_array($value)) {
                 $this->lastValue = $value;
@@ -51,14 +64,31 @@ abstract class Validator
             }
             foreach ($value as $item) {
                 if (!$this->validateItem($item)) {
-                    $this->lastValue = $value;
+                    $this->lastValue = $item;
+                    return false;
+                }
+            }
+            return true;
+        } elseif ($this->isStrSeparator) {
+            if (!is_string($value)) {
+                $this->lastValue = $value;
+                $this->message = 'is not a string';
+                return false;
+            }
+            $value = explode($this->strSeparator, $value);
+            foreach ($value as $item) {
+                if (!$this->validateItem($item)) {
+                    $this->lastValue = $item;
                     return false;
                 }
             }
             return true;
         } else {
-            $this->lastValue = $value;
-            return $this->validateItem($value);
+            if (!$this->validateItem($value)) {
+                $this->lastValue = $value;
+                return false;
+            }
+            return true;
         }
     }
 
