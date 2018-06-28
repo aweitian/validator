@@ -8,8 +8,7 @@ namespace Aw\Validator;
 
 abstract class Validator
 {
-    const STR_SEPARATOR_OR = '{or}';
-    const STR_SEPARATOR_COLON = '{colon}';
+
     /**
      * 数组验证失败的值
      * @var null

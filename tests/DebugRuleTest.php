@@ -95,4 +95,102 @@ class DebugRuleTest extends PHPUnit_Framework_TestCase
         $ret = $rule->validate();
         $this->assertTrue($ret);
     }
+
+    public function testJson1()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'array|json',
+        ));
+        $rule->setData(
+            array(
+                'foo' => array('{"aa":1,"bbb":"22222222","cc":[1,2]}', ':{}'),
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+        $this->assertEquals(":{}",$rule->lastMalignantValue);
+    }
+
+    public function testJson2()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'array|json',
+        ));
+        $rule->setData(
+            array(
+                'foo' => array('{}', '{"aa":1,"bbb":"22222222","cc":[1,2]}'),
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+    }
+
+
+    public function testSeparator()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'separator|int',
+        ));
+        $rule->setData(
+            array(
+                'foo' => "1,2,3,4,5",
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+    }
+
+    public function testSeparator2()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'separator:'.\Aw\Validator\Rules::STR_SEPARATOR_OR.'|int',
+        ));
+        $rule->setData(
+            array(
+                'foo' => "1|2|3|4|5",
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+    }
+
+    public function testSeparator3()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'separator:'.\Aw\Validator\Rules::STR_SEPARATOR_COLON.'|int',
+        ));
+        $rule->setData(
+            array(
+                'foo' => "1:2:3:4:5",
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+    }
+    public function testSeparator4()
+    {
+        $rule = new \Aw\Validator\Rules();
+
+        $rule->setRules(array(
+            'foo' => 'separator|int',
+        ));
+        $rule->setData(
+            array(
+                'foo' => "1,2,3,dd,5",
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+        $this->assertEquals("dd",$rule->lastMalignantValue);
+    }
 }

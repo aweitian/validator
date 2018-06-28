@@ -10,6 +10,8 @@
 namespace Aw\Validator;
 class Rules
 {
+    const STR_SEPARATOR_OR = '{or}';
+    const STR_SEPARATOR_COLON = '{colon}';
     const MODE_SINGLE = 0;
     const MODE_MUT = 1;
     protected $rules = array();
@@ -192,7 +194,7 @@ class Rules
         }
 
         if (!is_null($lastMalignant) && $lastMalignant !== false) {
-            $error = $error . " last malignant value is:" . (string)$lastMalignant;
+            $error = $error . " last malignant value is:" . (is_array($lastMalignant) ? var_export($lastMalignant, true) : $lastMalignant);
         }
 
         if (!isset($this->errors[$key])) {
@@ -206,6 +208,38 @@ class Rules
         }
 
     }
+
+    protected function beforeValidate(Validator $validator)
+    {
+        if (is_bool($this->isEmpty)) {
+            $validator->allowEmpty = $this->isEmpty;
+        }
+
+        if (is_bool($this->isStrict)) {
+            $validator->strict = $this->isStrict;
+        }
+
+        if (is_bool($this->isArray)) {
+            $validator->isArray = $this->isArray;
+        }
+
+        if (is_bool($this->isStrSeparator)) {
+            if (is_string($this->strSeparator)) {
+                switch ($this->strSeparator) {
+                    case self::STR_SEPARATOR_OR:
+                        $validator->strSeparator = "|";
+                        break;
+                    case self::STR_SEPARATOR_COLON:
+                        $validator->strSeparator = ':';
+                        break;
+                    default:
+                        $validator->strSeparator = $this->strSeparator;
+                }
+            }
+            $validator->isStrSeparator = $this->isStrSeparator;
+        }
+    }
+
 
     protected function finishValidate(Validator $validator)
     {
@@ -227,6 +261,7 @@ class Rules
      * bool
      * [eq|ne|gt|ge|lt|le]:pwd2
      * email
+     * json
      * url:dm
      * required:taw
      * str:20   str:3,9  一个数字为is,两个为min,max
@@ -273,9 +308,9 @@ class Rules
                     continue;
                 case "separator":
                     if (isset($args[0])) {
-                        if ($args[0] == Validator::STR_SEPARATOR_COLON) {
+                        if ($args[0] == self::STR_SEPARATOR_COLON) {
                             $this->strSeparator = ':';
-                        } elseif ($args[0] == Validator::STR_SEPARATOR_OR) {
+                        } elseif ($args[0] == self::STR_SEPARATOR_OR) {
                             $this->strSeparator = '|';
                         } else {
                             $this->strSeparator = $args[0];
@@ -299,6 +334,9 @@ class Rules
                 case "lt":
                 case "le":
                     $this->cmp_validate($key, $cmd, $args, $value);
+                    break;
+                case "json":
+                    $this->json_validate($key, $value);
                     break;
                 case "email":
                     $this->email_validate($key, $value);
@@ -385,17 +423,7 @@ class Rules
     {
         $v = new BooleanValidator();
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -408,17 +436,7 @@ class Rules
     {
         $v = new RegularExpressionValidator();
         $v->pattern = $reg[0];
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -432,17 +450,7 @@ class Rules
         $v = new RangeValidator();
         $v->range = $args;
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -457,17 +465,7 @@ class Rules
         $v = new DateValidator();
         $v->mode = DateValidator::MODE_YEAR;
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -481,17 +479,7 @@ class Rules
         $v = new DateValidator();
         $v->mode = DateValidator::MODE_TIME;
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -505,17 +493,7 @@ class Rules
         $v = new DateValidator();
         $v->mode = DateValidator::MODE_DATETIME;
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -529,17 +507,7 @@ class Rules
         $v = new DateValidator();
         $v->mode = DateValidator::MODE_DATE;
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -559,17 +527,7 @@ class Rules
             $v->max = intval($args[1]);
         }
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -593,17 +551,20 @@ class Rules
         if (isset($args[3])) {
             $v->integerOnly = 'true' == $args[3];
         }
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
+        $this->beforeValidate($v);
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message, $v->lastValue);
         }
 
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
+        $this->finishValidate($v);
+    }
 
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+    protected function json_validate($key, $value)
+    {
+        $v = new JsonValidator();
+
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -616,10 +577,7 @@ class Rules
     {
         $v = new EmailValidator();
 
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -631,21 +589,12 @@ class Rules
     protected function url_validate($key, $args, $value)
     {
         $v = new UrlValidator();
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
 
         if (isset($args[0]) && $args[0] == "dm") {
             $v->isDomain = true;
         }
+
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -668,17 +617,7 @@ class Rules
             }
         }
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -694,17 +633,7 @@ class Rules
             $v->requiredValue = $args[0];
         }
 
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
@@ -734,17 +663,7 @@ class Rules
             return;
         }
         $v->compareValue = $this->data[$args[0]];
-        if (is_bool($this->isEmpty)) {
-            $v->allowEmpty = $this->isEmpty;
-        }
-
-        if (is_bool($this->isStrict)) {
-            $v->strict = $this->isStrict;
-        }
-
-        if (is_bool($this->isArray)) {
-            $v->isArray = $this->isArray;
-        }
+        $this->beforeValidate($v);
 
         if (!$v->validate($value)) {
             $this->friendErr($key, $v->message, $v->lastValue);
