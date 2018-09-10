@@ -58,7 +58,7 @@ abstract class Validator
         if ($this->isArray) {
             if (!is_array($value)) {
                 $this->lastValue = $value;
-                $this->message = 'is not a array';
+                $this->message = '{attribute} is not a array';
                 return false;
             }
             foreach ($value as $item) {
@@ -71,7 +71,7 @@ abstract class Validator
         } elseif ($this->isStrSeparator) {
             if (!is_string($value)) {
                 $this->lastValue = $value;
-                $this->message = 'is not a string';
+                $this->message = '{attribute} is not a string';
                 return false;
             }
             $value = explode($this->strSeparator, $value);
