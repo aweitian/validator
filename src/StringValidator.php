@@ -9,6 +9,11 @@ namespace Aw\Validator;
 class StringValidator extends Validator
 {
     /**
+     * 保留两边空白
+     * @var bool
+     */
+    public $strip = true;
+    /**
      *
      * @var integer maximum length. Defaults to null, meaning no maximum limit.
      */
@@ -40,6 +45,7 @@ class StringValidator extends Validator
      */
     public function validateItem($value)
     {
+
         if ($this->allowEmpty && $this->isEmpty($value))
             return true;
 
@@ -47,6 +53,9 @@ class StringValidator extends Validator
             $this->message = '{attribute} is required.';
             return false;
         }
+
+        if ($this->strip)
+            $value = trim($value);
 
         if ($this->encoding !== false && function_exists('mb_strlen'))
             $length = mb_strlen($value, $this->encoding);

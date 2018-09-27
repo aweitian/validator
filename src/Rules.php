@@ -264,7 +264,8 @@ class Rules
      * json
      * url:dm
      * required:taw
-     * str:20   str:3,9  一个数字为is,两个为min,max
+     * str:20   str:3,9  一个数字为is,两个为min,max,不去两边空白
+     * string:5 一个数字min，两个相等是IS不等是MIN,MAX，去两边空白
      * range:aaa,bbb,ccc,dddd
      * int:3   int:,9   int:4,9
      * number:3    number,9.02,number:5.4,999.99   number:2,3,true,true    min,max,unsigned,intonly
@@ -346,6 +347,9 @@ class Rules
                     break;
                 case "str":
                     $this->string_validate($key, $args, $value);
+                    break;
+                case "string":
+                    $this->strip_string_validate($key, $args, $value);
                     break;
                 case "range":
                     $this->range_validate($key, $args, $value);
@@ -606,6 +610,7 @@ class Rules
     protected function string_validate($key, $args, $value)
     {
         $v = new StringValidator();
+        $v->strip = false;
         if (count($args) == 1) {
             $v->is = intval($args[0]);
         } else if (count($args) == 2) {
@@ -615,6 +620,35 @@ class Rules
             if ($args[1] != '') {
                 $v->max = intval($args[1]);
             }
+        }
+
+        $this->beforeValidate($v);
+
+        if (!$v->validate($value)) {
+            $this->friendErr($key, $v->message, $v->lastValue);
+        }
+
+        $this->finishValidate($v);
+    }
+
+    protected function strip_string_validate($key, $args, $value)
+    {
+        $v = new StringValidator();
+        $v->strip = true;
+        if (count($args) == 1) {
+            $v->min = intval($args[0]);
+        } else if (count($args) == 2) {
+            if ($args[0] != '' && $args[1] != '' && $args[0] = $args[1]) {
+                $v->is = intval($args[0]);
+            } else {
+                if ($args[0] != '') {
+                    $v->min = intval($args[0]);
+                }
+                if ($args[1] != '') {
+                    $v->max = intval($args[1]);
+                }
+            }
+
         }
 
         $this->beforeValidate($v);

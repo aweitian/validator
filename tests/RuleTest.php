@@ -334,6 +334,68 @@ class RuleTest extends PHPUnit_Framework_TestCase
         $ret = $rule->validate();
         $this->assertFalse($ret);
     }
+
+    public function testRuleStripString()
+    {
+        $rule = new \Aw\Validator\Rules();
+        $rule->setRules(array(
+            'foo' => 'string:2',
+        ));
+        $rule->setData(
+            array(
+                'foo' => ' a ',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+
+
+        $rule->setData(
+            array(
+                'foo' => 'ab',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+
+
+        $rule->setData(
+            array(
+                'foo' => '       ',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+
+
+        $rule->setData(
+            array(
+                'foo' => '   abc    ',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+
+        $rule->setRules(array(
+            'foo' => 'string:2,2',
+        ));
+        $rule->setData(
+            array(
+                'foo' => '   abc    ',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertFalse($ret);
+
+
+        $rule->setData(
+            array(
+                'foo' => '   bc    ',
+            )
+        );
+        $ret = $rule->validate();
+        $this->assertTrue($ret);
+    }
 }
 
 class check
