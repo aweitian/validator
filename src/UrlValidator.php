@@ -12,9 +12,9 @@ class UrlValidator extends Validator
      *
      * @var string the regular expression used to validates the attribute value.
      */
-    public $pattern = '/^(http|https):\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)/i';
-    public $domain = '/^(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)/i';
-
+    public $pattern = '/^(http|https):\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)$/i';
+    public $domain = '/^(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)$/i';
+    public $strict = true;
     public $isDomain = false;
 
     /**
@@ -33,7 +33,20 @@ class UrlValidator extends Validator
 
     protected function validateValue($value)
     {
-        return is_string($value) && preg_match($this->isDomain ? $this->domain : $this->pattern, $value);
+        if (!is_string($value))
+            return false;
+        if ($this->strict) {
+            if ($this->isDomain) {
+                return !!preg_match($this->domain, $value);
+            } else {
+                return !!preg_match($this->pattern, $value);
+            }
+        } else {
+            if (preg_match($this->domain, $value)) {
+                return true;
+            }
+            return !!preg_match($this->pattern, $value);
+        }
     }
 }
 
