@@ -184,6 +184,9 @@ class Rules
                     "{attribute}" => isset($this->text[$key]) ? $this->text[$key] : $key
                 )
             );
+            if (!is_null($lastMalignant) && $lastMalignant !== false) {
+                $error = str_replace('{lastMalignant}', $lastMalignant, $error);
+            }
         } else {
             $error = strtr(
                 $error,
@@ -191,11 +194,11 @@ class Rules
                     "{attribute}" => isset($this->text[$key]) ? $this->text[$key] : $key
                 )
             );
+            if (!is_null($lastMalignant) && $lastMalignant !== false) {
+                $error = $error . " last malignant value is:" . (is_array($lastMalignant) ? var_export($lastMalignant, true) : $lastMalignant);
+            }
         }
 
-        if (!is_null($lastMalignant) && $lastMalignant !== false) {
-            $error = $error . " last malignant value is:" . (is_array($lastMalignant) ? var_export($lastMalignant, true) : $lastMalignant);
-        }
 
         if (!isset($this->errors[$key])) {
             $this->errors[$key] = $error;
